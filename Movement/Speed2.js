@@ -48,12 +48,16 @@ Speed2.registerModule({
                 "VerusTick",
                 "Vulcan",
                 "NoRules",
+                "NoRulesHop",
                 "BlocksMC",
                 "Karhu",
                 "UNCPLow",
                 "UNCPLow2",
                 "MoonLow",
                 "MoonBHop",
+                "MoonTick",
+                "MoonRewrite",
+                "MoonRewriteGround",
             ]
         }),
         UNCPLow: Setting.float({
@@ -70,6 +74,8 @@ Speed2.registerModule({
         })
     }
 }, function(module) {
+    var oldposLastTickX = 0
+    var oldposLastTickZ = 0
     module.on("enable", function(){
         
     })
@@ -78,6 +84,10 @@ Speed2.registerModule({
         timeInAir = 0
     })
     module.on("update", function(){
+        oldposLastTickX = plr.posX
+        oldposLastTickZ = plr.posZ
+
+
         if (module.settings.SpeedMode.get() == "TakaLow") {
             if (plr.onGround) {
                 setMotionY(.4)
@@ -135,11 +145,6 @@ Speed2.registerModule({
             }else if(timeInAir == 3) {
                 setMotionY(-module.settings.UNCPLow.get())
                 setTimer(1.6)
-                plr.onGround = false
-            }else{
-                if (timeInAir > 5) {
-                    //plr.onGround = true
-                }
             }
         }else if (module.settings.SpeedMode.get() == "UNCPLow2") {
             setTimer(1.06)
@@ -152,7 +157,7 @@ Speed2.registerModule({
             if (plr.onGround) {
                 setMotionY(.42)
             }else{
-                setMotionY(-.1)
+                setMotionY(-0.05)
                 plr.onGround = true
                 speed(module.settings.MoonLowSpeed.get())
             }
@@ -167,6 +172,38 @@ Speed2.registerModule({
                     }
                 }
             }
+        }else if (module.settings.SpeedMode.get() == "MoonTick") {
+            if (tick > 1) {
+                for (var i = 0; i < 50; i ++) {
+                    speed(1.05)
+                }
+                tick = 0
+            }else{
+                speed(-0.3)
+            }
+        }else if (module.settings.SpeedMode.get() == "MoonRewrite") {
+            speed(1.1)
+            if (plr.onGround) {
+                setMotionY(0.4)
+            }else{
+                plr.onGround = true
+            }
+        }else if (module.settings.SpeedMode.get() == "NoRulesHop") {
+            if (plr.onGround) {
+                setMotionY(.4)
+                speed(0)
+            }else{
+                if (tick == 1) {
+                    for (var i = 0; i < 10; i ++) {
+                        speed(1.1)
+                    }
+                }
+            }
+        }else if (module.settings.SpeedMode.get() == "MoonRewriteGround") {
+            if (plr.onGround) {
+                speed(1.16)
+                setTimer(1.1)
+            }
         }
         
         if (!plr.onGround) { timeInAir ++ }else{ timeInAir = 0 }
@@ -175,5 +212,19 @@ Speed2.registerModule({
     })
     module.on("packet", function(eventPacket){
         var thePacket = eventPacket.getPacket()
+
+        if (thePacket instanceof C04PacketPlayerPosition) {
+            if (tick > 2) {
+                //thePacket.x = ""
+                //thePacket.z = ""
+                tick = 0
+            }
+        }
+    })
+
+    module.on("jump", function(e){
+        if (module.settings.SpeedMode.get() == "MoonRewriteGround") {
+            e.cancelEvent()
+        }
     })
 });
