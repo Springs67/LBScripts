@@ -157,7 +157,7 @@ Speed2.registerModule({
             if (plr.onGround) {
                 setMotionY(.42)
             }else{
-                setMotionY(-0.05)
+                setMotionY(-0.12)
                 plr.onGround = true
                 speed(module.settings.MoonLowSpeed.get())
             }
@@ -184,18 +184,18 @@ Speed2.registerModule({
         }else if (module.settings.SpeedMode.get() == "MoonRewrite") {
             speed(1.1)
             if (plr.onGround) {
-                setMotionY(0.4)
+                plr.jump()
             }else{
                 plr.onGround = true
             }
         }else if (module.settings.SpeedMode.get() == "NoRulesHop") {
             if (plr.onGround) {
-                setMotionY(.4)
+                setMotionY(.42)
                 speed(0)
             }else{
-                if (tick == 1) {
+                if (tick > 0) {
                     for (var i = 0; i < 10; i ++) {
-                        speed(1.1)
+                        speed(1.04)
                     }
                 }
             }
@@ -210,18 +210,6 @@ Speed2.registerModule({
         tick ++
         module.tag = module.settings.SpeedMode.get()
     })
-    module.on("packet", function(eventPacket){
-        var thePacket = eventPacket.getPacket()
-
-        if (thePacket instanceof C04PacketPlayerPosition) {
-            if (tick > 2) {
-                //thePacket.x = ""
-                //thePacket.z = ""
-                tick = 0
-            }
-        }
-    })
-
     module.on("jump", function(e){
         if (module.settings.SpeedMode.get() == "MoonRewriteGround") {
             e.cancelEvent()
