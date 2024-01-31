@@ -51,15 +51,19 @@ Fly2.registerModule({
                 "NoRules",
                 "VulcanGlide",
                 "MoonNew",
-                "MoonRewrite",
-                "MoonRewriteOMEGALOL",
             ]
         }),
-        FlySpeed: Setting.float({
-            name: "FlySpeed",
-            default: 1.5,
+        NoRulesBoostSpeed: Setting.float({
+            name: "NoRulesBoostSpeed",
+            default: 1.7,
             min: 1.0,
-            max: 2.0
+            max: 2.0,
+        }),
+        NoRulesSpeed: Setting.float({
+            name: "NoRulesSpeed",
+            default: 1.1,
+            min: 1.0,
+            max: 2.0,
         }),
     }
 }, function(module) {
@@ -71,17 +75,15 @@ Fly2.registerModule({
                 sendPacket(new C04PacketPlayerPosition(plr.posX,plr.posY - 0.5,plr.posZ,true))
             }
             plr.jump()
-        }else if (module.settings.Mode.get() == "MoonNew") {
+        }else if (module.settings.Mode.get() == "MoonNew" || module.settings.Mode.get() == "NoRules") {
             for (var i = 0; i < 65; i ++) {
                 sendPacket(new C04PacketPlayerPosition(plr.posX, plr.posY + .05, plr.posZ, false))
                 sendPacket(new C04PacketPlayerPosition(plr.posX, plr.posY, plr.posZ, false))
-                speed(0)
             }
         }
     })
     module.on("disable", function(){
         setTimer(1)
-        commandManager.executeCommands(".t blink off")
         timeInAir = 0
         speed(0)
         tick = 0
@@ -114,13 +116,18 @@ Fly2.registerModule({
                 speed(0.5)
             }
         }else if (module.settings.Mode.get() == "NoRules") {
-            setMotionY(0)
-            plr.onGround = true
-            speed(1.1)
-            if (tick < 20) {
-                setTimer(1.6)
-            }else{
-                setTimer(1.3)
+            if (tick > 1) {
+                setMotionY(0)
+                plr.onGround = true
+                if (tick < 10) {
+                    setTimer(1.63)
+                    for (var i = 0; i < 10; i ++) {
+                        speed(module.settings.NoRulesBoostSpeed.get() / 1.9)
+                    }
+                }else{
+                    setTimer(1.32)
+                    speed(module.settings.NoRulesSpeed.get())
+                }
             }
         }else if (module.settings.Mode.get() == "VulcanGlide") {
             if (tick > 1) {
@@ -128,50 +135,7 @@ Fly2.registerModule({
                 tick = 0
             }
         }else if (module.settings.Mode.get() == "MoonNew") {
-
-            if (tick == 1) {
-                commandManager.executeCommands(".t blink on")
-            }
-
-            plr.onGround = true
-            setMotionY(-.0004)
-
-            if (tick == 3) {
-                for (var i = 0; i < 20; i ++) {
-                    //speed(1.22)
-                }
-            }
-
-            if (tick2 < 2) {
-                speed(0)
-            }
-
-            if (tick2 == 18) {
-                //commandManager.executeCommands(".t Fly2 off")
-            }
-        }else if (module.settings.Mode.get() == "MoonRewrite") {
-            if (plr.onGround) {
-                setYPos(plr.posY + 1)
-                spoofGround()
-            }
-            setMotionY(-.01)
-            setTimer(1.1)
-            speed(.92)
-            if (tick == 3) {
-                sendPacket(new C04PacketPlayerPosition(plr.posX, oldposY - 0.1, plr.posZ, true))
-                setTimer(0.7)
-            }else{
-                sendPacket(new C03PacketPlayer(true))
-            }
-            //plr.onGround = true
-        }else if (module.settings.Mode.get() == "MoonRewriteOMEGALOL") {
-            if (tick == 4) {
-                setMotionY(1)
-                sendPacket(new C04PacketPlayerPosition(plr.posX, 400, plr.posZ, true))
-                tick = 0
-            }else{
-                setMotionY(-0.15)
-            }
+            setMotionY(-.02)
         }
 
 
@@ -184,15 +148,5 @@ Fly2.registerModule({
 
     module.on("packet", function(eventPacket){
         var thePacket = eventPacket.getPacket()
-
-        if (module.settings.Mode.get() == "MoonRewriteOMEGALOL") {
-            if (thePacket instanceof C04PacketPlayerPosition) {
-                if (timeInAir == 5) {
-                    //thePacket.y = -100
-                    //setMotionY(1)
-                    timeInAir = 0
-                }
-            }   
-        }
     })
 })
