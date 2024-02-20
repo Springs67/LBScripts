@@ -41,47 +41,29 @@ Speed2.registerModule({
     settings: {
         SpeedMode: Setting.list({
             name: "Mode",
-            default: "Custom",
+            default: "Vulcan",
             values: [
                 "TakaLow",
-                "Verus",
-                "VerusTick",
                 "Vulcan",
-                "NoRules",
-                "NoRulesHop",
                 "BlocksMC",
-                "Karhu",
                 "UNCPLow",
-                "UNCPLow2",
-                "MoonLow",
-                "MoonBHop",
-                "MoonTick",
-                "MoonRewrite",
-                "MoonRewriteGround",
+                "Spartan",
+                "Moon",
             ]
         }),
-        UNCPLow: Setting.float({
-            name: "UNCP_Height",
-            default: 0.10,
-            min: 0.00,
-            max: 0.10
-        }),
-        MoonLowSpeed: Setting.float({
-            name: "MoonLowSpeed",
-            default: 1.5,
-            min: 1.0,
-            max: 1.5
-        })
     }
 }, function(module) {
     var oldposLastTickX = 0
     var oldposLastTickZ = 0
+    var timesJumped = 0
     module.on("enable", function(){
         
     })
     module.on("disable", function(){
         setTimer(1)
         timeInAir = 0
+        timesJumped = 0
+        tick = 0
     })
     module.on("update", function(){
         oldposLastTickX = plr.posX
@@ -96,30 +78,6 @@ Speed2.registerModule({
                 plr.onGround = true
                 speed(1.3)
             }
-        }else if (module.settings.SpeedMode.get() == "NoRules") {
-            if (plr.onGround) {
-                setMotionY(.3)
-            }else{
-                setMotionY(-1)
-                plr.onGround = true
-                speed(1.75)
-            }
-        }else if (module.settings.SpeedMode.get() == "Verus") {
-            if (plr.onGround) {
-                plr.jump()
-                speed(1.45)
-            }else{
-                plr.onGround = true
-            }
-        }else if (module.settings.SpeedMode.get() == "VerusTick") {
-            speed(1.14)
-            if (plr.onGround) {
-                plr.jump()
-                setTimer(20)
-            }else{
-                plr.onGround = true
-                setTimer(.8)
-            }
         }else if (module.settings.SpeedMode.get() == "BlocksMC") {
             speed(1.04)
             setTimer(1.06)
@@ -131,11 +89,10 @@ Speed2.registerModule({
         }else if (module.settings.SpeedMode.get() == "Vulcan") {
             if (plr.onGround) {
                 plr.jump()
-                speed(.94)
+                speed(.98)
             }else{
                 if (timeInAir == 3) {
-                    setMotionY(-.3)
-                    timeInAir = 0
+                    setMotionY(-.15)
                 }
             }
         }else if (module.settings.SpeedMode.get() == "UNCPLow") {
@@ -143,66 +100,49 @@ Speed2.registerModule({
             if (plr.onGround) {
                 plr.jump()
             }else if(timeInAir == 3) {
-                setMotionY(-module.settings.UNCPLow.get())
+                setMotionY(-.1)
                 setTimer(1.6)
             }
-        }else if (module.settings.SpeedMode.get() == "UNCPLow2") {
-            setTimer(1.06)
+        }else if (module.settings.SpeedMode.get() == "Moon") {
             if (plr.onGround) {
-                setMotionY(.14)
+                setMotionY(1)
             }else{
-                setMotionY(-.42)
+                setMotionY(-.2)
             }
-        }else if (module.settings.SpeedMode.get() == "MoonLow") {
+        }else if (module.settings.SpeedMode.get() == "NoRulesLow") {
             if (plr.onGround) {
-                setMotionY(.42)
+                setMotionY(.5)
             }else{
-                setMotionY(-0.12)
+                setMotionY(-.2)
                 plr.onGround = true
-                speed(module.settings.MoonLowSpeed.get())
+                speed(1.5)
             }
-        }else if (module.settings.SpeedMode.get() == "MoonBHop") {
-            if (plr.onGround) {
-                setMotionY(.42)
-                speed(0)
-            }else{
-                if (timeInAir == 2) {
-                    for (var i = 0; i < 20; i ++) {
-                        speed(module.settings.MoonLowSpeed.get())
-                    }
-                }
-            }
-        }else if (module.settings.SpeedMode.get() == "MoonTick") {
-            if (tick > 1) {
-                for (var i = 0; i < 50; i ++) {
-                    speed(1.05)
-                }
-                tick = 0
-            }else{
-                speed(-0.3)
-            }
-        }else if (module.settings.SpeedMode.get() == "MoonRewrite") {
-            speed(1.1)
+            setTimer(1.3)
+        }else if (module.settings.SpeedMode.get() == "MoonBalance") {
             if (plr.onGround) {
                 plr.jump()
+            }
+            if (tick > 3) {
+                setTimer(5)
+                tick = 0
             }else{
+                setTimer(.8)
+            }
+        }else if (module.settings.SpeedMode.get() == "MoonTroll") {
+            speed(1.35)
+            if (plr.onGround) {
+                setMotionY(.2)
+            }else{
+                setMotionY(-.05)
                 plr.onGround = true
             }
-        }else if (module.settings.SpeedMode.get() == "NoRulesHop") {
+        }else if (module.settings.SpeedMode.get() == "Spartan") {
             if (plr.onGround) {
-                setMotionY(.42)
-                speed(0)
-            }else{
-                if (tick > 0) {
-                    for (var i = 0; i < 10; i ++) {
-                        speed(1.04)
-                    }
-                }
-            }
-        }else if (module.settings.SpeedMode.get() == "MoonRewriteGround") {
-            if (plr.onGround) {
-                speed(1.16)
-                setTimer(1.1)
+                plr.jump()
+                speed(1.2)
+                setMotionY(.1)
+            }else if (timeInAir == 1) {
+                setMotionY(-.1)
             }
         }
         
@@ -210,9 +150,4 @@ Speed2.registerModule({
         tick ++
         module.tag = module.settings.SpeedMode.get()
     })
-    module.on("jump", function(e){
-        if (module.settings.SpeedMode.get() == "MoonRewriteGround") {
-            e.cancelEvent()
-        }
-    })
-});
+})
