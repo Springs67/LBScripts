@@ -6,6 +6,10 @@ function setMotionY(v) { plr.motionY = v }
 function sendPacket(v) { plr.sendQueue.addToSendQueue(v) }
 function setTimer(v) { mc.timer.timerSpeed = v }
 function setYPos(v) { plr.setPosition(plr.posX, plr.posY + v, plr.posZ) }
+function setSpeed(v) {
+    plr.onGround = true
+    speed(v)
+}
 var tick = 0
 var tick2 = 0
 var client = "net.minecraft.network.play.client"
@@ -27,6 +31,11 @@ function spoofGround() {
     sendPacket(new C03PacketPlayer(true))
 }
 
+function fakeJump() {
+    plr.jump()
+    speed(.5)
+}
+
 var Speed2 = registerScript({
     name: "Speed2",
     version: "1.0.0",
@@ -46,9 +55,15 @@ Speed2.registerModule({
                 "TakaLow",
                 "Vulcan",
                 "BlocksMC",
+                "BlocksMCLow",
                 "UNCPLow",
                 "Spartan",
+                "Verus",
+                "VerusReset",
                 "Moon",
+                "NegativityLow",
+                "NegativityHop",
+                "NoRules",
             ]
         }),
     }
@@ -56,11 +71,13 @@ Speed2.registerModule({
     var oldposLastTickX = 0
     var oldposLastTickZ = 0
     var timesJumped = 0
+    var timeOnGround = 0
     module.on("enable", function(){
-        
+        speed(0)
     })
     module.on("disable", function(){
         setTimer(1)
+        speed(0)
         timeInAir = 0
         timesJumped = 0
         tick = 0
@@ -86,14 +103,18 @@ Speed2.registerModule({
             }else{
                 plr.onGround = true
             }
+        }else if (module.settings.SpeedMode.get() == "BlocksMCLow") {
+            setTimer(1.06)
+            if (plr.onGround) {
+                plr.jump()
+            }else if(timeInAir == 3) {
+                setMotionY(-.03)
+            }
         }else if (module.settings.SpeedMode.get() == "Vulcan") {
             if (plr.onGround) {
                 plr.jump()
-                speed(.98)
-            }else{
-                if (timeInAir == 3) {
-                    setMotionY(-.15)
-                }
+            }else if(timeInAir == 3) {
+                setMotionY(-.05)
             }
         }else if (module.settings.SpeedMode.get() == "UNCPLow") {
             setTimer(1)
@@ -103,39 +124,6 @@ Speed2.registerModule({
                 setMotionY(-.1)
                 setTimer(1.6)
             }
-        }else if (module.settings.SpeedMode.get() == "Moon") {
-            if (plr.onGround) {
-                setMotionY(1)
-            }else{
-                setMotionY(-.2)
-            }
-        }else if (module.settings.SpeedMode.get() == "NoRulesLow") {
-            if (plr.onGround) {
-                setMotionY(.5)
-            }else{
-                setMotionY(-.2)
-                plr.onGround = true
-                speed(1.5)
-            }
-            setTimer(1.3)
-        }else if (module.settings.SpeedMode.get() == "MoonBalance") {
-            if (plr.onGround) {
-                plr.jump()
-            }
-            if (tick > 3) {
-                setTimer(5)
-                tick = 0
-            }else{
-                setTimer(.8)
-            }
-        }else if (module.settings.SpeedMode.get() == "MoonTroll") {
-            speed(1.35)
-            if (plr.onGround) {
-                setMotionY(.2)
-            }else{
-                setMotionY(-.05)
-                plr.onGround = true
-            }
         }else if (module.settings.SpeedMode.get() == "Spartan") {
             if (plr.onGround) {
                 plr.jump()
@@ -144,8 +132,53 @@ Speed2.registerModule({
             }else if (timeInAir == 1) {
                 setMotionY(-.1)
             }
+        }else if (module.settings.SpeedMode.get() == "Verus") {
+            if (plr.onGround) {
+                fakeJump()
+            }
+            plr.onGround = true
+            speed(1.18)
+        }else if (module.settings.SpeedMode.get() == "VerusReset") {
+            if (plr.onGround && timeOnGround == 9) {
+                plr.jump()
+                speed(0)
+            }
+            if (timeOnGround < 8 && timeOnGround != 0) {
+                speed(1.8)
+            }
+        }else if (module.settings.SpeedMode.get() == "Moon") {
+            if (plr.onGround) {
+                setMotionY(.42)
+            }
+            setSpeed(1.25)
+        }else if (module.settings.SpeedMode.get() == "NegativityLow") {
+            if (plr.onGround) {
+                plr.jump()
+                speed(1.55)
+                setMotionY(.1)
+            }else if (timeInAir == 1) {
+                setMotionY(-.1)
+            }
+        }else if (module.settings.SpeedMode.get() == "NegativityHop") {
+            if (plr.onGround) {
+                plr.jump()
+            }else{
+                if (plr.motionY > .21) {
+                    plr.motionY *= 1.12
+                }
+                plr.onGround = true
+                speed(1.2)
+            }
+        }else if (module.settings.SpeedMode.get() == "NoRules") {
+            setTimer(1.6)
+            if (plr.onGround) {
+                plr.jump()
+            }else{
+                setMotionY(-.1)
+            }
         }
-        
+
+        if (plr.onGround) { timeOnGround ++ }else{ timeOnGround = 0 }
         if (!plr.onGround) { timeInAir ++ }else{ timeInAir = 0 }
         tick ++
         module.tag = module.settings.SpeedMode.get()
